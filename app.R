@@ -1,6 +1,10 @@
 
 library(shiny)
-library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(stringr)
+library(lubridate)
 library(DT)
 library(plotly)
 source('snd_theme.R')
@@ -47,7 +51,7 @@ read_dengue <- function(file = NULL){
 #  read_dengue('Report16.rds')
 #)
 
-lista <- read_rds('../denguexsemana.rds')
+lista <- read_rds('denguexsemana.rds')
 
 epi_table <- function(df = NA){
   df %>% 
@@ -173,34 +177,28 @@ ui <- fluidPage(
     )
 )
 
+
+dt <- bind_rows(
+  read_dengue('Report16_2025.rds'),
+  read_dengue('Report16.rds')
+)
+
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   dengue <- reactive({
     if (input$Municipio != 'Seleccionar' & input$Localidad != 'Seleccionar') {
-      bind_rows(
-        read_dengue('Report16_2025.rds'),
-        read_dengue('Report16.rds')
-      ) %>% 
+       dt %>% 
         filter(MUNICIPIO == input$Municipio, LOCALIDAD == input$Localidad)
     } else if (input$Municipio != 'Seleccionar') {
-      bind_rows(
-        read_dengue('Report16_2025.rds'),
-        read_dengue('Report16.rds')
-      ) %>% 
-        filter(MUNICIPIO == input$Municipio)
+      dt %>% 
+       filter(MUNICIPIO == input$Municipio)
     } else {
-      bind_rows(
-        read_dengue('Report16_2025.rds'),
-        read_dengue('Report16.rds')
-      ) 
+      dt 
     }
   })
   
   dengue_last <- reactive({
-    bind_rows(
-      read_dengue('Report16_2025.rds'),
-      read_dengue('Report16.rds')
-      ) %>%
+    dt %>%
       filter(`FECHA DE INICIO` >= Sys.Date() - 22)
   })
   
@@ -422,5 +420,6 @@ server <- function(input, output, session) {
 # Run the application 
 #shinyApp(ui = ui, server = server)
  #, options = list(host = '0.0.0.0', port = 8080)) 
-shinylive::export(".", "./docs")
+#shinylive::export("./", "./docs")
+#shinylive::assets_download("0.5.0")
 shinyApp(ui, server)
