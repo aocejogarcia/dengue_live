@@ -40,7 +40,7 @@ read_dengue <- function(file = NULL){
       MUNICIPIO == 'SAN LUIS RÍO COLORADO' & LOCALIDAD %in% c('San Luis Rio Colorado',
                                                               'SONORA') ~ 'SAN LUIS RÍO COLORADO',
       T ~ LOCALIDAD
-    )) %>% filter(!is.na(NOMBRE)) %>% 
+    )) %>% filter(!is.na(`IDENTIFICADOR DE CASO`)) %>% 
     mutate(`FECHA DE CAPTURA` = as.Date.numeric(`FECHA DE CAPTURA`, origin = '1899-12-30'), 
            `FECHA DE INICIO` = as.Date.numeric(`FECHA DE INICIO`, origin = '1899-12-30'))
 }
