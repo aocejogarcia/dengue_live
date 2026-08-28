@@ -418,8 +418,5 @@ server <- function(input, output, session) {
 }
 
 # Run the application 
-#shinyApp(ui = ui, server = server)
- #, options = list(host = '0.0.0.0', port = 8080)) 
-#shinylive::export("./", "./docs")
-#shinylive::assets_download("0.5.0")
-shinyApp(ui, server)
+shinylive::export("./", "./docs")
+#shinyApp(ui, server)
