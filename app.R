@@ -418,5 +418,5 @@ server <- function(input, output, session) {
 }
 
 # Run the application 
-shinylive::export("./", "./docs")
-#shinyApp(ui, server)
+#shinylive::export("./", "./docs")
+shinyApp(ui, server)
