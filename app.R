@@ -116,7 +116,7 @@ ui <- fluidPage(
       
       div(
         class = "snd-header-title",
-        h1("Dengue en tiempo real"),
+        h1(paste("Dengue en tiempo real (actualización", format(Sys.time(), '%d de %B de %Y a las %H:%M:%S'))),
         p("Sistema de información epidemiológica")
       )
     )
