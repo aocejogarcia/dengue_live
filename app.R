@@ -210,6 +210,7 @@ server <- function(input, output, session) {
   ## Tabla confirmados últimos 21 días ##
   output$confirmados <- renderDT({
     dengue_last() %>% 
+      filter(ESTATUS == 'CONFIRMADO') %>%
       count(MUNICIPIO) %>% 
       arrange(desc(n)) %>% 
       rename(Casos = n) %>% 
