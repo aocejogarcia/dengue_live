@@ -116,7 +116,7 @@ ui <- fluidPage(
       
       div(
         class = "snd-header-title",
-        h1(paste("Dengue en tiempo real (actualización", format(Sys.time(), '%d de %B de %Y a las %H:%M:%S', tz = 'MST'), ')')),
+        h1(paste("Dengue en tiempo real (actualización", format(Sys.time(), '%d de %B de %Y a las %H:%M:%S', tz = 'MST'), ')', sep = '')),
         p("Sistema de información epidemiológica")
       )
     )
@@ -281,7 +281,7 @@ server <- function(input, output, session) {
       filter(str_detect(Semana, pattern = format(Sys.Date(), '%Y'))) %>% 
       plot_ly() %>% 
       add_bars(x = ~Semana, y = ~Estimados, name = 'Estimados', marker = list(color = '#611232')) %>% 
-      add_lines(x = ~Semana, y = ~Positividad, name = 'Positividad', marker = list(color = '#B38E5D'), yaxis = "y2") %>% 
+      add_lines(x = ~Semana, y = ~Positividad, name = 'Positividad', line = list(color = '#B38E5D'), yaxis = "y2") %>% 
       layout(
         yaxis2 = list(
           title = "Positividad", 
