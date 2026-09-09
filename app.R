@@ -51,7 +51,15 @@ read_dengue <- function(file = NULL){
 #  read_dengue('Report16.rds')
 #)
 
-lista <- read_rds('denguexsemana.rds')
+dt <- bind_rows(
+  read_dengue('Report16_2025.rds'),
+  read_dengue('Report16.rds')
+)
+
+lista <- dt %>%
+  count(MUNICIPIO, LOCALIDAD) %>%
+  select(-n) %>%
+  arrange(MUNICIPIO, LOCALIDAD)
 
 epi_table <- function(df = NA){
   df %>% 
@@ -175,12 +183,6 @@ ui <- fluidPage(
             )
         )
     )
-)
-
-
-dt <- bind_rows(
-  read_dengue('Report16_2025.rds'),
-  read_dengue('Report16.rds')
 )
 
 # Define server logic required to draw a histogram
