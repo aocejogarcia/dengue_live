@@ -1,7 +1,7 @@
-
 library(shiny)
 library(tidyr)
 library(dplyr)
+library(forcats)
 library(readr)
 library(stringr)
 library(lubridate)
@@ -42,7 +42,24 @@ read_dengue <- function(file = NULL){
       T ~ LOCALIDAD
     )) %>% filter(!is.na(`IDENTIFICADOR DE CASO`)) %>% 
     mutate(`FECHA DE CAPTURA` = as.Date.numeric(`FECHA DE CAPTURA`, origin = '1899-12-30'), 
-           `FECHA DE INICIO` = as.Date.numeric(`FECHA DE INICIO`, origin = '1899-12-30'))
+           `FECHA DE INICIO` = as.Date.numeric(`FECHA DE INICIO`, origin = '1899-12-30'),
+           Edad = case_when(
+             EDAD %in% 0:4 ~ '0 - 4',
+             EDAD %in% 5:9 ~ '5 - 9',
+             EDAD %in% 10:14 ~ '10 - 14',
+             EDAD %in% 15:19 ~ '15 - 19',
+             EDAD %in% 20:24 ~ '20 - 24',
+             EDAD %in% 25:29 ~ '25 - 29',
+             EDAD %in% 30:34 ~ '30 - 34',
+             EDAD %in% 35:39 ~ '35 - 39',
+             EDAD %in% 40:44 ~ '40 - 44',
+             EDAD %in% 45:49 ~ '45 - 49',
+             EDAD %in% 50:54 ~ '50 - 54',
+             EDAD %in% 55:59 ~ '55 - 59',
+             EDAD %in% 60:64 ~ '60 - 64',
+             EDAD >= 65 ~ '65 y más'
+           )) %>% 
+    mutate(Edad = fct(Edad, levels = c('0 - 4', '5 - 9', '10 - 14', '15 - 19','20 - 24', '25 - 29','30 - 34', '35 - 39','40 - 44', '45 - 49','50 - 54', '55 - 59','60 - 64', '65 y más')))
 }
 
 
@@ -56,10 +73,17 @@ dt <- bind_rows(
   read_dengue('Report16.rds')
 )
 
-lista <- dt %>%
-  count(MUNICIPIO, LOCALIDAD) %>%
-  select(-n) %>%
-  arrange(MUNICIPIO, LOCALIDAD)
+lista <- dt %>% 
+  count(MUNICIPIO, LOCALIDAD) %>% 
+  left_join(
+    read_rds('conjunto_de_datos_iter_26CSV20.rds') %>%
+      filter(!str_detect(str_to_upper(NOM_MUN), 'TOTAL DE')) %>% 
+      mutate(MUNICIPIO = str_to_upper(NOM_MUN), 
+             MUN = as.numeric(MUN)) %>% 
+      select(MUN, MUNICIPIO) %>% 
+      distinct()
+  ) %>% 
+  select(-n)
 
 epi_table <- function(df = NA){
   df %>% 
@@ -81,7 +105,41 @@ epi_table <- function(df = NA){
     arrange(Semana)
   }
   
+edades <- read_rds('poblaciones_son.rds') %>% 
+  filter(ANO == as.numeric(format(Sys.Date(), '%Y')))
 
+#read_csv('denguexsemana/pobproy_quinq1.csv') %>%
+#  filter(ANO >= 2020, CLAVE_ENT == 26
+#  ) %>%
+#  mutate(CLAVE = CLAVE - 26000) %>% 
+#  mutate(JUR = case_when(
+#    CLAVE %in% c(1,5,8,9,13,14,20,21,23,24,28,30,32,34,37,38,40,41,44,45,50,52,53,54,56,57,61,62,63,66,67,68) ~ 1,
+#    CLAVE %in% c(4,7,17,46,47,60,65)                                                                          ~ 2,
+#    CLAVE %in% c(2,6,10,11,15,16,19,22,27,31,35,36,39,43,58,59,64)                                            ~ 3,
+#    CLAVE %in% c(12,18,25,29,49,51,69,72)                                                                     ~ 4,
+#    CLAVE %in% c(3,26,33,42,71)                                                                               ~ 5,
+#    CLAVE %in% c(48,55,70)                                                                                    ~ 6
+#  )) %>% 
+#  pivot_longer(cols = POB_00_04:POB_85_mm, names_to = 'Edad', values_to = 'POB') %>% 
+#  mutate(Edad = case_when(
+#    Edad == 'POB_00_04' ~ '0 - 4',
+#    Edad == 'POB_05_09' ~ '5 - 9',
+#    Edad == 'POB_010_014' ~ '10 - 14',
+#    Edad == 'POB_015_019' ~ '15 - 19',
+#    Edad == 'POB_20_24' ~ '20 - 24',
+#    Edad == 'POB_25_29' ~ '25 - 29',
+#    Edad == 'POB_30_34' ~ '30 - 34',
+#    Edad == 'POB_35_39' ~ '35 - 39',
+#    Edad == 'POB_40_44' ~ '40 - 44',
+#    Edad == 'POB_45_49' ~ '45 - 49',
+#    Edad == 'POB_50_54' ~ '50 - 54',
+#    Edad == 'POB_55_59' ~ '55 - 59',
+#    Edad == 'POB_60_64' ~ '60 - 64',
+#    Edad %in% c('POB_65_69', 'POB_70_74', 'POB_75_79', 'POB_80_84', 'POB_85_mm') ~ '65 y más'
+#  )) %>% 
+#  select(-POB_TOTAL, -fecha) %>% 
+#  mutate(Edad = fct(Edad, levels = c('0 - 4', '5 - 9', '10 - 14', '15 - 19','20 - 24', '25 - 29','30 - 34', '35 - 39','40 - 44', '45 - 49','50 - 54', '55 - 59','60 - 64', '65 y más'))) %>% 
+#  saveRDS('denguexsemana/poblaciones_son.rds')
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -124,7 +182,7 @@ ui <- fluidPage(
       
       div(
         class = "snd-header-title",
-        h1(paste("Dengue en tiempo real (actualización", format(Sys.time(), '%d de %B de %Y a las %H:%M:%S', tz = 'MST'), ')', sep = '')),
+        h1(paste("Dengue en tiempo real (actualización ", format(Sys.time(), '%d de %B de %Y a las %H:%M:%S'), ')', sep = '')),
         p("Sistema de información epidemiológica")
       )
     )
@@ -157,9 +215,20 @@ ui <- fluidPage(
             br(),
             DTOutput("confirmados"),
             br(),
-            DTOutput("table")
+            DTOutput("localidades")#,
+#            br(),
+#            DTOutput("col")
           ),
-            tabPanel(
+          tabPanel(
+            title = "Municipio",
+            br(),
+            DTOutput("table"),
+            br(),
+            plotlyOutput("edades", height = "550px")#, 
+  #          br(),
+   #         plotlyOutput("estimates", height = "550px")
+          ),
+          tabPanel(
               title = "Curva epidémica",
               br(),
               plotlyOutput("cases", height = "550px"), 
@@ -185,6 +254,9 @@ ui <- fluidPage(
     )
 )
 
+
+
+
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   dengue <- reactive({
@@ -204,6 +276,19 @@ server <- function(input, output, session) {
       filter(`FECHA DE INICIO` >= Sys.Date() - 22)
   })
   
+  edadesT <- reactive({
+    if (input$Municipio != 'Seleccionar') {
+      edades %>% 
+        filter(CLAVE == as.numeric(unique(lista$MUN[lista$MUNICIPIO == input$Municipio]))) %>% 
+        group_by(Edad) %>% 
+        summarise(POB = sum(POB, na.rm = T))
+    } else {
+      edades %>% 
+        group_by(Edad) %>% 
+        summarise(POB = sum(POB, na.rm = T))
+    }
+  })
+  
 #  dengue_tot <- reactive({
 #      read_dengue('Report16_2025.rds')
 #  })
@@ -212,7 +297,7 @@ server <- function(input, output, session) {
   ## Tabla confirmados últimos 21 días ##
   output$confirmados <- renderDT({
     dengue_last() %>% 
-      filter(ESTATUS == 'CONFIRMADO') %>%
+      filter(ESTATUS == 'CONFIRMADO') %>% 
       count(MUNICIPIO) %>% 
       arrange(desc(n)) %>% 
       rename(Casos = n) %>% 
@@ -255,6 +340,39 @@ server <- function(input, output, session) {
                 )
   })
 
+  
+  ## Tabla No. last ##
+  output$localidades <- renderDT({
+    dengue_last() %>% 
+      filter(ESTATUS == 'CONFIRMADO') %>% 
+      count(MUNICIPIO, LOCALIDAD) %>% 
+      arrange(desc(n)) %>% 
+      datatable(extensions = 'Buttons', caption = 'Casos confirmados por municipio y localidad en los últimos 21 días',
+                rownames = F,
+                options = list(dom = 'Bfrtip',
+                               buttons = c('excel'),
+                               pageLength = -1
+                )
+      )
+  })
+
+  ## Tabla No. colonias ##
+#  output$col <- renderDT({
+#    dengue() %>%
+#      filter(ESTATUS == 'CONFIRMADO', `FECHA DE INICIO` >= Sys.Date() - 22) %>% 
+#      count(MUNICIPIO, LOCALIDAD, COLONIA) %>% 
+#      arrange(desc(n)) %>% 
+#      datatable(extensions = 'Buttons', caption = 'Casos confirmados por municipio, localidad y colonia en los últimos 21 días',
+#                rownames = F,
+#                options = list(dom = 'Bfrtip',
+#                               buttons = c('excel'),
+#                               pageLength = -1
+#                )
+#      )
+#  })
+  
+    
+  
   # Curva epidémica  
   output$cases <- renderPlotly({
     epi_table(dengue()) %>%
@@ -402,6 +520,39 @@ server <- function(input, output, session) {
     ) %>% 
       formatStyle('Valor de priorizacion', target = 'row', backgroundColor = styleInterval(cuts = c(100, 300, 1000), values = c('darkgreen', 'yellow', 'orange', 'darkred')))
   })
+  
+  
+  output$edades <- renderPlotly({
+    dengue() %>% 
+      filter(ESTATUS == 'CONFIRMADO', year(`FECHA DE INICIO`) == year(Sys.Date())) %>% 
+      count(Edad) %>% 
+      full_join(edadesT()) %>% 
+      replace(is.na(.), 0) %>% 
+      mutate(IA = round(n/POB*100000, 2)) %>% 
+      plot_ly(x = ~as_factor(Edad)) %>%
+      #add_trace(y = ~Mujeres, name = "Mujeres", type = "bar", marker = list(color = 'rgb(150, 14, 83)')) %>% 
+      add_trace(y = ~n, name = "Casos", type = "bar", marker = list(color = 'rgb(65, 3, 36)')) %>% 
+      add_lines(y = ~IA, name = "Incidencia", line = list(color = 'rgb(220, 127, 55)'), yaxis = "y2") %>% 
+      layout(title = '', legend = list(x = 1.1, y = 0.9, orientation = "v"),
+             yaxis2 = list(title = "Incidencia por 100,000 habs", side = "right", showgrid = F, ticks="outside",
+                           zerolinecolor = '#000000', overlaying = "y"), #range = c(0, 1.2 * max(graph2$incidencia, na.rm = T))),
+             xaxis = list(title = 'Grupo de edad (en años)',
+                          showgrid = F,
+                          ticks="outside", 
+                          zerolinecolor = '#000000', 
+                          tickangle=270#, categoryorder = "array", categoryarray = c(quinqueniosarray)
+             ),
+             yaxis = list(title = 'Casos',
+                          showgrid = F,
+                          ticks="outside", tickformat = ",d",
+                          zerolinecolor = '#000000'), #range = c(0, 1.2 * (max(graph2$Hombres, na.rm = T) + max(graph2$Mujeres, na.rm = T)))), 
+             barmode = "stack")
+    
+    
+  })
+  
+  
+  
 
 #  x %>% 
 #    mutate(Posición = seq(1, nrow(x))) %>% 
@@ -421,5 +572,8 @@ server <- function(input, output, session) {
 }
 
 # Run the application 
+#shinyApp(ui = ui, server = server)
+ #, options = list(host = '0.0.0.0', port = 8080)) 
 #shinylive::export("./", "./docs")
+#shinylive::assets_download("0.5.0")
 shinyApp(ui, server)
