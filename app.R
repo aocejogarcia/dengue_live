@@ -370,6 +370,7 @@ server <- function(input, output, session) {
       filter(ESTATUS == 'CONFIRMADO') %>% 
       count(MUNICIPIO, LOCALIDAD) %>% 
       arrange(desc(n)) %>% 
+      rename(Casos = n) %>%
       datatable(extensions = 'Buttons', caption = 'Casos confirmados por municipio y localidad en los últimos 21 días',
                 rownames = F,
                 options = list(dom = 'Bfrtip',
