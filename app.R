@@ -211,6 +211,8 @@ ui <- fluidPage(
             tabPanel(
             title = "Casos por semana epidemiológica",
             br(),
+            DTOutput("notificados"),
+            br(),
             DTOutput("probables"),
             br(),
             DTOutput("confirmados"),
@@ -311,9 +313,30 @@ server <- function(input, output, session) {
   })
   
 
+  ## Tabla NOTIFICADOS últimos 21 días ##
+  output$notificados <- renderDT({
+    dengue_last() %>% 
+#     filter(ESTATUS == 'PROBABLE') %>%
+      count(MUNICIPIO, Semana) %>%
+      arrange(Semana) %>% 
+      pivot_wider(values_from = n, names_from = Semana, values_fill = 0) %>% 
+      replace(is.na(.), 0) %>% 
+      datatable(extensions = 'Buttons', caption = 'Casos notificados por Municipio en los últimos 21 días', 
+                rownames = F,
+                options = list(dom = 'Bfrtip',
+                               buttons = c('excel'),
+                               pageLength = -1
+                )
+      )
+  })
+  
+
+
+
   ## Tabla probables últimos 21 días ##
   output$probables <- renderDT({
     dengue_last() %>% 
+      filter(ESTATUS == 'PROBABLE') %>%
       count(MUNICIPIO, Semana) %>%
       arrange(Semana) %>% 
       pivot_wider(values_from = n, names_from = Semana, values_fill = 0) %>% 
