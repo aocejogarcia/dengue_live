@@ -211,11 +211,15 @@ ui <- fluidPage(
             tabPanel(
             title = "Casos por semana epidemiológica",
             br(),
+            br(),
             DTOutput("notificados"),
+            br(),
             br(),
             DTOutput("probables"),
             br(),
+            br(),
             DTOutput("confirmados"),
+            br(),
             br(),
             DTOutput("localidades")#,
 #            br(),
@@ -224,7 +228,9 @@ ui <- fluidPage(
           tabPanel(
             title = "Municipio",
             br(),
+            br(),
             DTOutput("table"),
+            br(),
             br(),
             plotlyOutput("edades", height = "550px")#, 
   #          br(),
@@ -233,17 +239,21 @@ ui <- fluidPage(
           tabPanel(
               title = "Curva epidémica",
               br(),
+              br(),
               plotlyOutput("cases", height = "550px"), 
+              br(),
               br(),
               plotlyOutput("estimates", height = "550px")
             ),
             tabPanel(
               title = "Inicio de síntomas vs notificación",
-              br(),
+            br(),
+            br(),
               plotlyOutput("sintvsnot") ## Estatal
             ),
           tabPanel(
             title = "Priorización de localidades",
+            br(),
             br(),
             DTOutput("priorizacion") ## Estatal
           )
