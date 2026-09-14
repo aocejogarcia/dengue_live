@@ -209,13 +209,15 @@ ui <- fluidPage(
         mainPanel(
           tabsetPanel(
             tabPanel(
-            title = "Casos por semana epidemiológica",
+            title = "Casos notificados y probables",
             br(),
             br(),
             DTOutput("notificados"),
             br(),
             br(),
-            DTOutput("probables"),
+            DTOutput("probables")
+          ),tabPanel(
+            title = "Casos confirmados",
             br(),
             br(),
             DTOutput("confirmados"),
