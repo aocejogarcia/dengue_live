@@ -34,6 +34,9 @@ jobs:
             any::DT
             any::plotly
 
+      - name: Record dataset timestamp
+        run: git log -1 --format=%cI -- Report16.rds > dataset_timestamp.txt
+
       - name: Export Shinylive app
         run: Rscript -e 'shinylive::export(".", "./docs")'
 

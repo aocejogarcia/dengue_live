@@ -9,6 +9,12 @@ library(DT)
 library(plotly)
 source('snd_theme.R')
 
+dataset_timestamp <- if (file.exists('dataset_timestamp.txt')) {
+  readLines('dataset_timestamp.txt', n = 1)
+} else {
+  format(file.info('Report16.rds')$mtime, format = '%Y-%m-%dT%H:%M:%S%z')
+}
+
 read_dengue <- function(file = NULL){
   read_rds(file) %>% 
     #select(-`...2`, -`...3`, -`...5`, -`...6`, -`...7`, -`...9`, -`...10`, -`...11`, -`...15`, -`...16`, -`...17`, -`...18`, -`...19`, -`...22`, -`...23`, -`...24`, -`...33`) %>% 
@@ -182,7 +188,7 @@ ui <- fluidPage(
       
       div(
         class = "snd-header-title",
-        h1(paste("Dengue en tiempo real (actualización ", format(file.info('Report16.rds')$ctime, '%d de %B de %Y a las %H:%M:%S'), ')', sep = '')),
+        h1(paste("Dengue en tiempo real (actualización ", format(as.POSIXct(substr(dataset_timestamp, 1, 19), format = '%Y-%m-%dT%H:%M:%S'), '%d de %B de %Y a las %H:%M:%S'), ')', sep = '')),
         p("Sistema de información epidemiológica")
       )
     )
