@@ -44,4 +44,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update Shinylive app from Report16.rds
-          file_pattern: docs/
+          file_pattern: |
+            docs/
+            dataset_timestamp.txt
