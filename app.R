@@ -9,11 +9,7 @@ library(DT)
 library(plotly)
 source('snd_theme.R')
 
-dataset_timestamp <- if (file.exists('dataset_timestamp.txt')) {
-  readLines('dataset_timestamp.txt', n = 1)
-} else {
-  format(file.info('Report16.rds')$mtime, format = '%Y-%m-%dT%H:%M:%S%z')
-}
+dataset_timestamp <- readLines('dataset_timestamp.txt', n = 1)
 
 read_dengue <- function(file = NULL){
   read_rds(file) %>% 
